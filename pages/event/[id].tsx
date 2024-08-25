@@ -6,11 +6,18 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Event, Player } from '@/lib/types'
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '@radix-ui/react-dialog'
+import { DialogHeader } from '@/components/ui/dialog'
+import { set } from 'date-fns'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Terminal } from 'lucide-react'
 
 export default function PublicEventDetailPage() {
   const [event, setEvent] = useState<Event | null>(null)
   const [newPlayer, setNewPlayer] = useState({ name: '', isKeeper: false })
   const [isLoading, setIsLoading] = useState(false)
+  const [showDialog, setShowDialog] = useState(false)
+  const [joinMessage, setJoinMessage] = useState('')
   const router = useRouter()
   const { id } = router.query
 
@@ -64,7 +71,9 @@ export default function PublicEventDetailPage() {
       }
       await fetchEvent()
       setNewPlayer({ name: '', isKeeper: false })
-      alert('Successfully joined the event!')
+      setShowDialog(true)
+      const data = await response.json()
+      setJoinMessage(data.message)
     } catch (error) {
       console.error('Error joining event:', error)
       alert('Failed to join event. Please try again.')
@@ -99,11 +108,19 @@ export default function PublicEventDetailPage() {
           <p>Payment Deadline: {event.paymentDeadline}</p>
           <p>Status: {event.isFinished ? 'Finished' : 'Upcoming'}</p>
         </CardContent>
+
       </Card>
 
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Participants</CardTitle>
+          <Alert hidden={!showDialog}>
+            <Terminal className="h-4 w-4" />
+            <AlertTitle>{joinMessage}!</AlertTitle>
+            <AlertDescription>
+              See you di lapangan!
+            </AlertDescription>
+          </Alert>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="keepers" className="w-full">
@@ -112,15 +129,16 @@ export default function PublicEventDetailPage() {
               <TabsTrigger value="players">Players ({players.length}/{event.maxPlayers})</TabsTrigger>
             </TabsList>
             <TabsContent value="keepers">
-              <ul className="list-disc list-inside">
+              <ul className="list-decimal list-inside">
                 {keepers.map((keeper: Player) => (
                   <li key={keeper.name}>{keeper.name}</li>
                 ))}
               </ul>
             </TabsContent>
             <TabsContent value="players">
-              <ul className="list-disc list-inside">
+              <ul className="list-decimal list-inside">
                 {players.map((player: Player) => (
+                  // table
                   <li key={player.name}>{player.name}</li>
                 ))}
               </ul>
@@ -135,7 +153,7 @@ export default function PublicEventDetailPage() {
             <CardTitle>Waiting List</CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="list-disc list-inside">
+            <ul className="list-decimal list-inside">
               {event.waitingList.map((player: Player) => (
                 <li key={player.name}>{player.name} ({player.isKeeper ? 'Keeper' : 'Player'})</li>
               ))}

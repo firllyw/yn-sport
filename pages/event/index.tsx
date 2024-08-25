@@ -30,7 +30,7 @@ export default function PublicEventListPage() {
   }
 
   const handleViewEvent = (eventId: string) => {
-    router.push(`/events/${eventId}`)
+    router.push(`/event/${eventId}`)
   }
 
   const formatDate = (dateString: string) => {
