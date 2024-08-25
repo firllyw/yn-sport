@@ -7,13 +7,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const client = await clientPromise
       const db = client.db("minisoccer")
       
-      const { placeName, mapsLink, date, time, maxKeepers, maxPlayers } = req.body
+      const { placeName, mapsLink, date, time, maxKeepers, maxPlayers, keeperPrice, playerPrice, paymentDeadline } = req.body
 
       const result = await db.collection("events").insertOne({
         placeName,
+        paymentDeadline,
         mapsLink,
         date,
         time,
+        keeperPrice,
+        playerPrice,
         maxKeepers,
         maxPlayers,
         players: [],
