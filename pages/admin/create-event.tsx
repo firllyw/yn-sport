@@ -1,89 +1,170 @@
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/router'
+import { useState } from 'react'
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Event } from '@/lib/types'
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useRouter } from 'next/router'
 import { withAdminAuth } from '@/components/withAdminAuth'
 
-function EventListPage() {
-  const [events, setEvents] = useState<Event[]>([])
-  const [activeTab, setActiveTab] = useState('upcoming')
+function CreateEventPage() {
+  const [eventDetails, setEventDetails] = useState({
+    placeName: '',
+    mapsLink: '',
+    date: '',
+    time: '',
+    paymentDeadline: '',
+    keeperPrice: 70000,
+    playerPrice: 80000,
+    maxKeepers: 0,
+    maxPlayers: 0,
+  })
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  useEffect(() => {
-    fetchEvents()
-  }, [])
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setEventDetails(prev => ({ ...prev, [name]: name.includes('Price') ? parseInt(value) : value }))
+  }
 
-  const fetchEvents = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
     try {
-      const response = await fetch('/api/events')
+      const response = await fetch('/api/events/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(eventDetails),
+      })
       if (!response.ok) {
-        throw new Error('Failed to fetch events')
+        throw new Error('Failed to create event')
       }
       const data = await response.json()
-      setEvents(data)
+      router.push('/admin/events')
     } catch (error) {
-      console.error('Error fetching events:', error)
-      alert('Failed to fetch events. Please try again.')
+      console.error('Error creating event:', error)
+      alert('Failed to create event. Please try again.')
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  const handleCreateEvent = () => {
-    router.push('/admin/create-event')
-  }
-
-  const handleManageEvent = (eventId: string) => {
-    router.push(`/admin/manage-event/${eventId}`)
-  }
-
-  const upcomingEvents = events.filter(event => !event.isFinished)
-  const finishedEvents = events.filter(event => event.isFinished)
-
   return (
-    <div className="container mx-auto p-4 max-w-3xl">
-      <h1 className="text-2xl font-bold mb-4">Event Management</h1>
-      <Button onClick={handleCreateEvent} className="mb-4">Create New Event</Button>
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="upcoming">Upcoming Matches</TabsTrigger>
-          <TabsTrigger value="finished">Finished Matches</TabsTrigger>
-        </TabsList>
-        <TabsContent value="upcoming">
-          {upcomingEvents.map(event => (
-            <Card key={event._id.toString()} className="mb-4">
-              <CardHeader>
-                <CardTitle>{event.placeName}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Date: {event.date}</p>
-                <p>Time: {event.time}</p>
-                <Button onClick={() => handleManageEvent(event._id.toString())} className="mt-2">
-                  Manage Event
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-        <TabsContent value="finished">
-          {finishedEvents.map(event => (
-            <Card key={event._id.toString()} className="mb-4">
-              <CardHeader>
-                <CardTitle>{event.placeName}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Date: {event.date}</p>
-                <p>Time: {event.time}</p>
-                <Button onClick={() => handleManageEvent(event._id.toString())} className="mt-2">
-                  View Event Details
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-      </Tabs>
+    <div className="container mx-auto p-4 max-w-md">
+      <h1 className="text-xl sm:text-2xl font-bold mb-4">Create Mini Soccer Event</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <Label htmlFor="placeName" className="text-sm font-medium">Place Name</Label>
+          <Input
+            id="placeName"
+            name="placeName"
+            value={eventDetails.placeName}
+            onChange={handleInputChange}
+            required
+            className="mt-1 w-full"
+          />
+        </div>
+        <div>
+          <Label htmlFor="mapsLink" className="text-sm font-medium">Maps Link</Label>
+          <Input
+            id="mapsLink"
+            name="mapsLink"
+            value={eventDetails.mapsLink}
+            onChange={handleInputChange}
+            required
+            className="mt-1 w-full"
+          />
+        </div>
+        <div>
+          <Label htmlFor="date" className="text-sm font-medium">Date</Label>
+          <Input
+            id="date"
+            name="date"
+            type="date"
+            value={eventDetails.date}
+            onChange={handleInputChange}
+            required
+            className="mt-1 w-full"
+          />
+        </div>
+        <div>
+          <Label htmlFor="time" className="text-sm font-medium">Time</Label>
+          <Input
+            id="time"
+            name="time"
+            type="time"
+            value={eventDetails.time}
+            onChange={handleInputChange}
+            required
+            className="mt-1 w-full"
+          />
+        </div>
+        <div>
+          <Label htmlFor="paymentDeadline" className="text-sm font-medium">Payment Deadline</Label>
+          <Input
+            id="paymentDeadline"
+            name="paymentDeadline"
+            type="date"
+            value={eventDetails.paymentDeadline}
+            onChange={handleInputChange}
+            required
+            className="mt-1 w-full"
+          />
+        </div>
+        <div>
+          <Label htmlFor="keeperPrice" className="text-sm font-medium">Keeper Price (IDR)</Label>
+          <Input
+            id="keeperPrice"
+            name="keeperPrice"
+            type="number"
+            value={eventDetails.keeperPrice}
+            onChange={handleInputChange}
+            required
+            className="mt-1 w-full"
+          />
+        </div>
+        <div>
+          <Label htmlFor="playerPrice" className="text-sm font-medium">Player Price (IDR)</Label>
+          <Input
+            id="playerPrice"
+            name="playerPrice"
+            type="number"
+            value={eventDetails.playerPrice}
+            onChange={handleInputChange}
+            required
+            className="mt-1 w-full"
+          />
+        </div>
+        <div>
+          <Label htmlFor="maxKeepers" className="text-sm font-medium">Maximum Keepers</Label>
+          <Input
+            id="maxKeepers"
+            name="maxKeepers"
+            type="number"
+            value={eventDetails.maxKeepers}
+            onChange={handleInputChange}
+            required
+            className="mt-1 w-full"
+          />
+        </div>
+        <div>
+          <Label htmlFor="maxPlayers" className="text-sm font-medium">Maximum Players</Label>
+          <Input
+            id="maxPlayers"
+            name="maxPlayers"
+            type="number"
+            value={eventDetails.maxPlayers}
+            onChange={handleInputChange}
+            required
+            className="mt-1 w-full"
+          />
+        </div>
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? 'Creating...' : 'Create Event'}
+        </Button>
+      </form>
     </div>
   )
 }
 
-export default withAdminAuth(EventListPage)
+export default withAdminAuth(CreateEventPage)
