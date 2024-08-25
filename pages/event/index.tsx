@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Event } from '@/lib/types'
+import { format, parseISO } from 'date-fns'
 
 export default function PublicEventListPage() {
   const [events, setEvents] = useState<Event[]>([])
@@ -29,7 +30,12 @@ export default function PublicEventListPage() {
   }
 
   const handleViewEvent = (eventId: string) => {
-    router.push(`/event/${eventId}`)
+    router.push(`/events/${eventId}`)
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = parseISO(dateString)
+    return format(date, "d MMMM yyyy, EEEE")
   }
 
   const upcomingEvents = events.filter(event => !event.isFinished)
@@ -48,9 +54,9 @@ export default function PublicEventListPage() {
             <Card key={event._id.toString()} className="mb-4">
               <CardHeader>
                 <CardTitle>{event.placeName}</CardTitle>
+                <p className="text-lg font-semibold text-primary">{formatDate(event.date)}</p>
               </CardHeader>
               <CardContent>
-                <p>Date: {event.date}</p>
                 <p>Time: {event.time}</p>
                 <p>Keeper Price: {event.keeperPrice} IDR</p>
                 <p>Player Price: {event.playerPrice} IDR</p>
@@ -66,9 +72,9 @@ export default function PublicEventListPage() {
             <Card key={event._id.toString()} className="mb-4">
               <CardHeader>
                 <CardTitle>{event.placeName}</CardTitle>
+                <p className="text-lg font-semibold text-primary">{formatDate(event.date)}</p>
               </CardHeader>
               <CardContent>
-                <p>Date: {event.date}</p>
                 <p>Time: {event.time}</p>
                 <Button onClick={() => handleViewEvent(event._id.toString())} className="mt-2">
                   View Results
