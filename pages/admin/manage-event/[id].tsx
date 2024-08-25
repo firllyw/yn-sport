@@ -128,7 +128,7 @@ function ManageEventPage() {
                 <DialogTitle>Confirm Action</DialogTitle>
                 <DialogDescription>
                   Are you sure you want to mark this event as {event.isFinished ? 'upcoming' : 'finished'}?
-                  This action will change the event's status.
+                  This action will change the events status.
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
